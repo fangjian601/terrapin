@@ -63,8 +63,14 @@ public class TerrapinUploaderOptions {
       LOG.error("Invalid num versions : " + s + ". Using num versions as 1.");
       options.loadOptions.setNumVersionsToKeep(1);
     }
-    options.loadOptions.setPartitioner(Enum.valueOf(PartitionerType.class,
-        properties.getProperty("terrapin.partitioner", "MODULUS")));
+
+    String partitioner = properties.getProperty("partitioner");
+    if (partitioner != null) {
+      LOG.warn("Property partitioner is deprecated. Please use terrapin.partitioner.");
+    } else {
+      partitioner = properties.getProperty("terrapin.partitioner", "MODULUS");
+    }
+    options.loadOptions.setPartitioner(Enum.valueOf(PartitionerType.class, partitioner));
     return options;
   }
 
