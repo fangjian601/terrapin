@@ -21,8 +21,10 @@ import com.google.common.collect.Lists;
 import com.pinterest.terrapin.TerrapinUtil;
 import com.pinterest.terrapin.thrift.generated.Options;
 import com.pinterest.terrapin.thrift.generated.PartitionerType;
-import org.codehaus.jackson.JsonGenerationException;
+
+import org.apache.commons.lang.ObjectUtils;
 import org.codehaus.jackson.annotate.JsonCreator;
+import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -43,10 +45,12 @@ import java.util.List;
  * or retained. Its also used by the client to quickly find the active serving HDFS
  * resource for a file set and find the partitioner type/number of partitions etc.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class FileSetInfo {
   private static final Logger LOG = LoggerFactory.getLogger(FileSetInfo.class);
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
+  @JsonIgnoreProperties(ignoreUnknown = true)
   public static class ServingInfo {
     @JsonProperty("hdfsPath")
     public String hdfsPath;
@@ -74,12 +78,8 @@ public class FileSetInfo {
         return false;
       }
       ServingInfo s = (ServingInfo)o;
-      String hdfsPath1 = (this.hdfsPath == null) ? "" : this.hdfsPath;
-      String hdfsPath2 = (s.hdfsPath == null) ? "" : s.hdfsPath;
-      String helixResource1 = (this.helixResource == null) ? "" : this.helixResource;
-      String helixResource2 = (s.helixResource == null) ? "" : s.helixResource;
-      return hdfsPath1.equals(hdfsPath2) &&
-             helixResource1.equals(helixResource2) &&
+      return ObjectUtils.equals(hdfsPath, s.hdfsPath) &&
+             ObjectUtils.equals(helixResource, s.helixResource) &&
              s.numPartitions == this.numPartitions &&
              s.partitionerType == this.partitionerType;
     }
@@ -101,6 +101,9 @@ public class FileSetInfo {
   // For Garbage Collection
   public boolean deleted;
 
+  // For storing user defined Data
+  public String userDefinedData;
+
   public FileSetInfo() {
     this.oldServingInfoList = Lists.newArrayList();
     this.valid = false;
@@ -112,6 +115,15 @@ public class FileSetInfo {
                      int numPartitions,
                      List<ServingInfo> oldServingInfoList,
                      Options options) {
+    this(fileSetName, hdfsDir, numPartitions, oldServingInfoList, options, null);
+  }
+
+  public FileSetInfo(String fileSetName,
+                     String hdfsDir,
+                     int numPartitions,
+                     List<ServingInfo> oldServingInfoList,
+                     Options options,
+                     String userDefinedData) {
     this.fileSetName = fileSetName;
     this.numVersionsToKeep = options.getNumVersionsToKeep();
     this.oldServingInfoList = oldServingInfoList;
@@ -121,6 +133,7 @@ public class FileSetInfo {
         options.getPartitioner());
     this.valid = true;
     this.deleted = false;
+    this.userDefinedData = userDefinedData;
   }
 
   public byte[] toJson() throws Exception {
@@ -146,18 +159,11 @@ public class FileSetInfo {
       return false;
     }
     FileSetInfo f = (FileSetInfo)o;
-    String fileSetName1 = this.fileSetName == null ? "" : this.fileSetName;
-    String fileSetName2 = f.fileSetName == null ? "" : f.fileSetName;
-    if ((f.servingInfo == null && this.servingInfo != null) ||
-        (f.servingInfo != null && this.servingInfo == null)) {
-      return false;
-    }
-    return fileSetName1.equals(fileSetName2) &&
+    return ObjectUtils.equals(fileSetName, f.fileSetName) &&
            f.numVersionsToKeep == this.numVersionsToKeep &&
-           ((f.servingInfo == null && this.servingInfo == null) ||
-             f.servingInfo.equals(this.servingInfo)) &&
-           ((f.oldServingInfoList == null && this.oldServingInfoList == null)) ||
-             f.oldServingInfoList.equals(this.oldServingInfoList) &&
-           f.deleted == this.deleted;
+           ObjectUtils.equals(servingInfo, f.servingInfo) &&
+           ObjectUtils.equals(oldServingInfoList, f.oldServingInfoList) &&
+           f.deleted == this.deleted &&
+           ObjectUtils.equals(userDefinedData, f.userDefinedData);
   }
 }

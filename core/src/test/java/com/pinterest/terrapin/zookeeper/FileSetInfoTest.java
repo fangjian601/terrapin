@@ -16,6 +16,7 @@
 */
 package com.pinterest.terrapin.zookeeper;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.pinterest.terrapin.thrift.generated.Options;
 import com.pinterest.terrapin.thrift.generated.PartitionerType;
@@ -41,7 +42,8 @@ public class FileSetInfoTest {
             "\"partitionerType\":\"MODULUS\"}" +
        "]," +
        "\"valid\":true," +
-       "\"deleted\":false}";
+       "\"deleted\":false," +
+       "\"userDefinedData\":\"test_data\"}";
 
   private static final FileSetInfo FILE_SET_INFO = new FileSetInfo(
       "some_file_set",
@@ -49,7 +51,8 @@ public class FileSetInfoTest {
       10,
       Lists.newArrayList(new FileSetInfo.ServingInfo("/terrapin/data/1",
           "$terrapin$data$1", 100, PartitionerType.MODULUS)),
-      new Options().setNumVersionsToKeep(2).setPartitioner(PartitionerType.MODULUS));
+      new Options().setNumVersionsToKeep(2).setPartitioner(PartitionerType.MODULUS),
+      "test_data");
 
   private static final String INVALID_FILE_SET_INFO_JSON =
       "{\"fileSetName\":null," +
@@ -57,7 +60,8 @@ public class FileSetInfoTest {
        "\"servingInfo\":null," +
        "\"oldServingInfoList\":[]," +
        "\"valid\":false," +
-       "\"deleted\":false}";
+       "\"deleted\":false," +
+       "\"userDefinedData\":null}";
 
   @Test
   public void testJsonParseForValid() throws Exception {
@@ -73,5 +77,11 @@ public class FileSetInfoTest {
   public void testJsonParseAndSerializeForInvalid() throws Exception {
     assertEquals(new FileSetInfo(), FileSetInfo.fromJson(INVALID_FILE_SET_INFO_JSON.getBytes()));
     assertEquals(INVALID_FILE_SET_INFO_JSON, new String(new FileSetInfo().toJson()));
+  }
+
+  @Test
+  public void testUnknownField() throws Exception {
+    String fileSetJson = FILE_SET_INFO_JSON.replaceAll("}$", ",\"unknown\": \"value\"}");
+    assertEquals(FILE_SET_INFO, FileSetInfo.fromJson(fileSetJson.getBytes()));
   }
 }
