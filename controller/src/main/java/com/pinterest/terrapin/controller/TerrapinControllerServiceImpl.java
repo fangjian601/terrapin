@@ -197,7 +197,8 @@ public class TerrapinControllerServiceImpl implements TerrapinController.Service
               hdfsDir,
               idealState.getNumPartitions(),
               oldServingInfoList,
-              request.getOptions());
+              request.getOptions(),
+              request.getUserDefinedData());
           zkManager.setFileSetInfo(request.getFileSet(), fileSetInfo);
         } catch (Exception e) {
           LOG.warn("Exception while loading.", e);

@@ -331,6 +331,7 @@ public class TerrapinUtil {
       request.setOptions(options);
       request.setFileSet(fsInfo.fileSetName);
       request.setExpectedNumPartitions(fsInfo.servingInfo.numPartitions);
+      request.setUserDefinedData(fsInfo.userDefinedData);
 
       LOG.info("Loading file set " + fsInfo.fileSetName + " at " + fsInfo.servingInfo.hdfsPath);
       long startTimeSeconds = System.currentTimeMillis() / 1000;

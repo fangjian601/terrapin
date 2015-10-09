@@ -69,7 +69,8 @@ struct TerrapinLoadRequest {
   // something has gone terribly wrong.
   3: required i32 expectedNumPartitions,
 
-  4: optional Options options
+  4: optional Options options,
+  5: optional string userDefinedData
 }
 
 service TerrapinController {
