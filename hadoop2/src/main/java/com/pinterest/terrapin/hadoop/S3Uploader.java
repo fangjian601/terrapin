@@ -52,7 +52,6 @@ public class S3Uploader extends BaseUploader {
 
   public static void main(String[] args) {
     TerrapinUploaderOptions uploaderOptions = TerrapinUploaderOptions.initFromSystemProperties();
-    uploaderOptions.validate();
 
     String s3Bucket = System.getProperties().getProperty("terrapin.s3bucket");
     String s3Prefix = System.getProperties().getProperty("terrapin.s3key_prefix");
